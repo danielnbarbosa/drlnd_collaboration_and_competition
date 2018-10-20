@@ -8,6 +8,7 @@ from collections import deque
 import numpy as np
 import matplotlib.pyplot as plt
 from visualize import sub_plot
+from tensorboardX import SummaryWriter
 
 
 class Stats():
@@ -21,6 +22,7 @@ class Stats():
         self.best_avg_score = -np.Inf            # best score for a single episode
         self.time_start = time.time()            # track cumulative wall time
         self.total_steps = 0                     # track cumulative steps taken
+        self.writer = SummaryWriter()
 
     def update(self, steps, rewards, i_episode):
         """Update stats after each episode."""
@@ -39,26 +41,22 @@ class Stats():
         """Define solve criteria."""
         return self.avg_score >= solve_score and i_episode >= 100
 
-    def print_episode(self, i_episode, alpha, buffer_len, steps):
-        """Output stats on each episode."""
-        print('\rEpisode {:5}   Avg: {:8.3f}   BestAvg: {:8.3f}   σ: {:8.3f}'
-              '   |   ⍺: {:6.4f}  Buffer: {:6}   Reward: {:8.3f}   Steps: {:6}'
-              .format(i_episode, self.avg_score, self.best_avg_score, self.std_dev,
-                      alpha, buffer_len, self.score, steps), end="")
+    def print_episode(self, i_episode, steps, stats_format, buffer_len):
+        common_stats = 'Episode: {:5}   Avg: {:8.3f}   BestAvg: {:8.3f}   σ: {:8.3f}  |  Steps: {:8}   Reward: {:8.3f}  |  '.format(i_episode, self.avg_score, self.best_avg_score, self.std_dev, steps, self.score)
+        print( '\r' + common_stats + stats_format.format(buffer_len), end="")
+        self.writer.add_scalar('data/reward', self.score, i_episode)
+        self.writer.add_scalar('data/std_dev', self.std_dev, i_episode)
+        self.writer.add_scalar('data/avg_reward', self.avg_score, i_episode)
+        self.writer.add_scalar('data/buffer_len', buffer_len, i_episode)
 
-    def print_epoch(self, i_episode, alpha, buffer_len):
-        """Output stats on each epoch (100 episodes)."""
+
+    def print_epoch(self, i_episode, stats_format, *args):
         n_secs = int(time.time() - self.time_start)
-        print('\rEpisode {:5}   Avg: {:8.3f}   BestAvg: {:8.3f}   σ: {:8.3f}'
-              '   |   ⍺: {:6.4f}  Buffer: {:6}'
-              '   |   Steps: {:8}  Secs: {:6}'
-              .format(i_episode, self.avg_score, self.best_avg_score, self.std_dev,
-                      alpha, buffer_len,
-                      self.total_steps, n_secs))
+        common_stats = 'Episode: {:5}   Avg: {:8.3f}   BestAvg: {:8.3f}   σ: {:8.3f}  |  Steps: {:8}   Secs: {:6}      |  '.format(i_episode, self.avg_score, self.best_avg_score, self.std_dev, self.total_steps, n_secs)
+        print('\r' + common_stats + stats_format.format(*args))
 
-    def print_solve(self, i_episode, alpha, buffer_len):
-        """Output stats on solve."""
-        self.print_epoch(i_episode, alpha, buffer_len)
+    def print_solve(self, i_episode, stats_format, *args):
+        self.print_epoch(i_episode, stats_format, *args)
         print('\nSolved in {:d} episodes!'.format(i_episode-100))
 
     def plot(self, loss_list):
