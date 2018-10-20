@@ -31,7 +31,10 @@ class MADDPG():
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)
 
     def step(self, all_states, all_actions, all_rewards, all_next_states, all_dones):
-        #print((all_states.shape, len(all_actions), len(all_rewards), all_next_states.shape, len(all_dones)))
+        all_states = np.expand_dims(all_states, axis=0)
+        all_actions = np.expand_dims(all_actions, axis=0)
+        all_next_states = np.expand_dims(all_next_states, axis=0)
+        #print((all_states.shape, all_actions.shape, len(all_rewards), all_next_states.shape, len(all_dones)))
         self.memory.add(all_states, all_actions, all_rewards, all_next_states, all_dones)
         # Learn every update_every time steps.
         self.t_step = (self.t_step + 1) % self.update_every
@@ -44,7 +47,8 @@ class MADDPG():
     def act(self, all_states, add_noise=True):
         all_actions = []
         for agent, state in zip(self.agents, all_states):
-            all_actions.append(agent.act(state, add_noise=True))
+            action = agent.act(state, add_noise=True)
+            all_actions.append(action)
         return all_actions
 
     def learn(self, experiences, gamma, indexes=None):
