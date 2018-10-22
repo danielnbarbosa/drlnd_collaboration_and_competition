@@ -24,7 +24,7 @@ def train(environment, agent, n_episodes=5000, max_t=1000,
 
 
     stats = statistics.Stats()
-    stats_format = 'Buffer: {:6}'
+    stats_format = 'Buffer: {:6}   Noise: {:.4}'
 
     for i_episode in range(1, n_episodes+1):
         rewards = []
@@ -53,18 +53,18 @@ def train(environment, agent, n_episodes=5000, max_t=1000,
                 per_agent_reward += step[i]
             per_agent_rewards.append(per_agent_reward)
         stats.update(t, [np.mean(per_agent_rewards)], i_episode)
-        stats.print_episode(i_episode, t, stats_format, buffer_len)
+        stats.print_episode(i_episode, t, stats_format, buffer_len, agent.noise)
 
         # every epoch (100 episodes)
         if i_episode % 100 == 0:
-            stats.print_epoch(i_episode, stats_format, buffer_len)
+            stats.print_epoch(i_episode, stats_format, buffer_len, agent.noise)
             save_name = 'checkpoints/episode.{}'.format(i_episode)
             #torch.save(agent.actor_local.state_dict(), save_name + '.actor.pth')
             #torch.save(agent.critic_local.state_dict(), save_name + '.critic.pth')
 
         # if solved
         if stats.is_solved(i_episode, solve_score):
-            stats.print_solve(i_episode, stats_format, buffer_len)
+            stats.print_solve(i_episode, stats_format, buffer_len, agent.noise)
             #torch.save(agent.actor_local.state_dict(), 'checkpoints/solved.actor.pth')
             #torch.save(agent.critic_local.state_dict(), 'checkpoints/solved.critic.pth')
             break

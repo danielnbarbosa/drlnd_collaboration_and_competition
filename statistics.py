@@ -41,13 +41,14 @@ class Stats():
         """Define solve criteria."""
         return self.avg_score >= solve_score and i_episode >= 100
 
-    def print_episode(self, i_episode, steps, stats_format, buffer_len):
+    def print_episode(self, i_episode, steps, stats_format, buffer_len, noise):
         common_stats = 'Episode: {:5}   Avg: {:8.3f}   BestAvg: {:8.3f}   σ: {:8.3f}  |  Steps: {:8}   Reward: {:8.3f}  |  '.format(i_episode, self.avg_score, self.best_avg_score, self.std_dev, steps, self.score)
-        print( '\r' + common_stats + stats_format.format(buffer_len), end="")
+        print( '\r' + common_stats + stats_format.format(buffer_len, noise), end="")
         self.writer.add_scalar('data/reward', self.score, i_episode)
         self.writer.add_scalar('data/std_dev', self.std_dev, i_episode)
         self.writer.add_scalar('data/avg_reward', self.avg_score, i_episode)
         self.writer.add_scalar('data/buffer_len', buffer_len, i_episode)
+        self.writer.add_scalar('data/noise', noise, i_episode)
 
 
     def print_epoch(self, i_episode, stats_format, *args):

@@ -20,12 +20,16 @@ class MADDPG():
                  batch_size=64,
                  update_every=2,
                  gamma=0.99,
-                 n_agents=2):
+                 n_agents=2,
+                 noise_start=2.0,
+                 noise_decay=0.9999):
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.update_every = update_every
         self.gamma = gamma
         self.n_agents = n_agents
+        self.noise = noise_start
+        self.noise_decay = noise_decay
         self.t_step = 0
         self.agents = [DDPG(0, models[0], load_file=None), DDPG(1, models[1], load_file=None)]
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)
@@ -43,11 +47,12 @@ class MADDPG():
                 experiences = self.memory.sample()
                 self.learn(experiences, self.gamma)
 
-    def act(self, all_states, add_noise=True):
+    def act(self, all_states):
         all_actions = []
         for agent, state in zip(self.agents, all_states):
             #print(all_states.shape, state.shape)
-            action = agent.act(state, add_noise=True)
+            action = agent.act(state, noise=self.noise, add_noise=True)
+            self.noise *= self.noise_decay
             all_actions.append(action)
         return np.array(all_actions).reshape(1, -1) # reshape 2x2 into 1x4 dim vector
 
@@ -116,7 +121,7 @@ class DDPG():
         # Noise process
         self.noise = OUNoise(action_size, seed)
 
-    def act(self, state, add_noise=True):
+    def act(self, state, noise=1.0, add_noise=True):
         """Returns actions for given state as per current policy."""
         state = torch.from_numpy(state).float().to(device)
         # calculate action values
@@ -125,7 +130,7 @@ class DDPG():
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
         if add_noise:
-            action += self.noise.sample()
+            action += self.noise.sample() * noise
         return np.clip(action, -1, 1)
 
 
@@ -155,7 +160,8 @@ class DDPG():
         #print('next_states: {}'.format(next_states.shape))
         actions_next = self.actor_target(next_states.reshape(-1, 2, 24)).reshape(-1, 4)
         #print('actions_next: {}'.format(actions_next.shape))
-        q_targets_next = self.critic_target(next_states, actions_next)  # TODO no_grad?
+        with torch.no_grad():
+            q_targets_next = self.critic_target(next_states, actions_next)  # TODO no_grad?
         #print('q_targets_next: {}'.format(q_targets_next.shape))
         # compute Q targets for current states (y_i)
         q_expected = self.critic_local(states, actions)
@@ -167,7 +173,9 @@ class DDPG():
         #print('rewards: {}'.format(rewards.index_select(1, agent_id).shape))
         #print('dones: {}'.format(dones.index_select(1, agent_id).shape))
         #print(agent_id, q_expected.shape, q_targets.shape)
-        critic_loss = F.mse_loss(q_expected, q_targets)
+        #huber_loss = torch.nn.SmoothL1Loss()
+        #critic_loss = huber_loss(q_expected, q_targets.detach())
+        critic_loss = F.mse_loss(q_expected, q_targets.detach())
         #print(agent_id, critic_loss)
         # minimize loss
         critic_loss.backward()
