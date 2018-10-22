@@ -27,13 +27,12 @@ class MADDPG():
         self.gamma = gamma
         self.n_agents = n_agents
         self.t_step = 0
-        self.agents = [DDPG(models[0], load_file=None), DDPG(models[1], load_file=None)]
+        self.agents = [DDPG(0, models[0], load_file=None), DDPG(1, models[1], load_file=None)]
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)
 
     def step(self, all_states, all_actions, all_rewards, all_next_states, all_dones):
-        all_states = np.expand_dims(all_states, axis=0)
-        all_actions = np.expand_dims(all_actions, axis=0)
-        all_next_states = np.expand_dims(all_next_states, axis=0)
+        all_states = all_states.reshape(1, -1)  # reshape 2x24 into 1x48 dim vector
+        all_next_states = all_next_states.reshape(1, -1)  # reshape 2x24 into 1x48 dim vector
         #print((all_states.shape, all_actions.shape, len(all_rewards), all_next_states.shape, len(all_dones)))
         self.memory.add(all_states, all_actions, all_rewards, all_next_states, all_dones)
         # Learn every update_every time steps.
@@ -47,19 +46,32 @@ class MADDPG():
     def act(self, all_states, add_noise=True):
         all_actions = []
         for agent, state in zip(self.agents, all_states):
+            #print(all_states.shape, state.shape)
             action = agent.act(state, add_noise=True)
             all_actions.append(action)
-        return all_actions
+        return np.array(all_actions).reshape(1, -1) # reshape 2x2 into 1x4 dim vector
 
-    def learn(self, experiences, gamma, indexes=None):
+    def learn(self, experiences, gamma):
+        all_actions = []
         for i, agent in enumerate(self.agents):
-            agent.learn(i, experiences, gamma, indexes=None)
+            states, _, _, _, _ = experiences
+            agent_id = torch.tensor([i])
+            state = states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
+            #print('state: {}'.format(state.shape))
+            action = agent.actor_local(state)
+            #print('action: {}'.format(action.shape))
+            all_actions.append(action)
+        actions_pred = torch.cat(all_actions, dim=1)
+        #print('all_actions: {}'.format(all_actions.shape))
+
+        for i, agent in enumerate(self.agents):
+            agent.learn(i, experiences, gamma, actions_pred)
 
 
 class DDPG():
     """Interacts with and learns from the environment."""
 
-    def __init__(self, model, action_size=2, seed=0, load_file=None,
+    def __init__(self, id, model, action_size=2, seed=0, load_file=None,
                  tau=1e-3,
                  lr_actor=1e-4,
                  lr_critic=1e-3,
@@ -78,6 +90,7 @@ class DDPG():
         """
         random.seed(seed)
 
+        self.id = id
         self.action_size = action_size
         self.tau = tau
         self.lr_actor = lr_actor
@@ -121,7 +134,7 @@ class DDPG():
         self.noise.reset()
 
 
-    def learn(self, agent_id, experiences, gamma, indexes=None):
+    def learn(self, agent_id, experiences, gamma, actions_pred):
         """Update policy and value parameters using given batch of experience tuples.
         Q_targets = r + γ * critic_target(next_state, actor_target(next_state))
         where:
@@ -138,29 +151,41 @@ class DDPG():
 
         # ---------------------------- update critic ---------------------------- #
         # get predicted next-state actions and Q values from target models
+        self.critic_optimizer.zero_grad()
         agent_id = torch.tensor([agent_id])
-        actions_next = self.actor_target(next_states)
-        q_targets_next = self.critic_target(next_states, actions_next)
+        #print('next_states: {}'.format(next_states.shape))
+        actions_next = self.actor_target(next_states.reshape(-1, 2, 24)).reshape(-1, 4)
+        #print('actions_next: {}'.format(actions_next.shape))
+        q_targets_next = self.critic_target(next_states, actions_next)  # TODO no_grad?
+        #print('q_targets_next: {}'.format(q_targets_next.shape))
         # compute Q targets for current states (y_i)
         q_expected = self.critic_local(states, actions)
+        #print('q_expected: {}'.format(q_expected.shape))
         #print(agent_id, actions_next.shape, q_targets_next.shape, q_expected.shape)
         # compute critic loss
         q_targets = rewards.index_select(1, agent_id) + (gamma * q_targets_next * (1 - dones.index_select(1, agent_id)))
+        #print('q_targets: {}'.format(q_targets.shape))
+        #print('rewards: {}'.format(rewards.index_select(1, agent_id).shape))
+        #print('dones: {}'.format(dones.index_select(1, agent_id).shape))
         #print(agent_id, q_expected.shape, q_targets.shape)
         critic_loss = F.mse_loss(q_expected, q_targets)
         #print(agent_id, critic_loss)
         # minimize loss
-        self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()
 
         # ---------------------------- update actor ---------------------------- #
         # compute actor loss
+        self.actor_optimizer.zero_grad()
         #print(states.shape)
-        actions_pred = self.actor_local(states)
+        #state = states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
+        #print('state: {}'.format(state.shape))
+        #actions_pred = self.actor_local(state)
+        #print('actions_pred: {}'.format(actions_pred.shape))
+        actions_pred = actions_pred.detach()
         actor_loss = -self.critic_local(states, actions_pred).mean()
         # minimize loss
-        self.actor_optimizer.zero_grad()
+        #actor_loss.backward(retain_graph=True)
         actor_loss.backward()
         self.actor_optimizer.step()
 
@@ -207,6 +232,7 @@ class OUNoise:
     def sample(self):
         """Update internal state and return it as a noise sample."""
         x = self.state
+        #dx = self.theta * (self.mu - x) + self.sigma * np.array([random.random() for i in range(len(x))])
         dx = self.theta * (self.mu - x) + self.sigma * np.random.randn(self.size)
         self.state = x + dx
         return self.state

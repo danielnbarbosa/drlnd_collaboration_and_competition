@@ -78,9 +78,9 @@ class LowDimCritic(nn.Module):
     def forward(self, state, action):
         """Build a critic (value) network that maps (state, action) pairs -> Q-values."""
         #print('state pre:  {}'.format(state.shape))
-        state = state.reshape((-1, 48))
+        #state = state.reshape((-1, 48))
         #print('action pre:  {}'.format(action.shape))
-        action = action.reshape((-1, 4))
+        #action = action.reshape((-1, 4))
         #print('action pst:  {}'.format(action.shape))
         #print('state pst:  {}'.format(state.shape))
         xs = F.relu(self.fcs1(state))
