@@ -61,11 +61,10 @@ class MADDPG():
             action = agent.actor_local(state)
             #print('action: {}'.format(action.shape))
             all_actions.append(action)
-        actions_pred = torch.cat(all_actions, dim=1)
         #print('all_actions: {}'.format(all_actions.shape))
 
         for i, agent in enumerate(self.agents):
-            agent.learn(i, experiences, gamma, actions_pred)
+            agent.learn(i, experiences, gamma, all_actions)
 
 
 class DDPG():
@@ -134,7 +133,7 @@ class DDPG():
         self.noise.reset()
 
 
-    def learn(self, agent_id, experiences, gamma, actions_pred):
+    def learn(self, agent_id, experiences, gamma, all_actions):
         """Update policy and value parameters using given batch of experience tuples.
         Q_targets = r + γ * critic_target(next_state, actor_target(next_state))
         where:
@@ -182,7 +181,10 @@ class DDPG():
         #print('state: {}'.format(state.shape))
         #actions_pred = self.actor_local(state)
         #print('actions_pred: {}'.format(actions_pred.shape))
-        actions_pred = actions_pred.detach()
+
+        actions_pred = [actions if i == self.id else actions.detach() for i, actions in enumerate(all_actions)]
+        #print(actions_pred[1].shape)
+        actions_pred = torch.cat(actions_pred, dim=1)
         actor_loss = -self.critic_local(states, actions_pred).mean()
         # minimize loss
         #actor_loss.backward(retain_graph=True)
