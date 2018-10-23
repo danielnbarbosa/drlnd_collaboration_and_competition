@@ -17,12 +17,12 @@ class MADDPG():
 
     def __init__(self, models, action_size=2, seed=0, load_file=None,
                  buffer_size=int(1e5),
-                 batch_size=64,
-                 update_every=2,
+                 batch_size=128,
+                 update_every=4,
                  gamma=0.99,
                  n_agents=2,
                  noise_start=2.0,
-                 noise_decay=0.9999):
+                 noise_decay=0.99999):
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.update_every = update_every
@@ -57,9 +57,20 @@ class MADDPG():
         return np.array(all_actions).reshape(1, -1) # reshape 2x2 into 1x4 dim vector
 
     def learn(self, experiences, gamma):
+        states, _, _, next_states, _ = experiences
+
+        all_next_actions = []
+        for i, agent in enumerate(self.agents):
+            agent_id = torch.tensor([i])
+            next_state = next_states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
+            #print('state: {}'.format(state.shape))
+            next_action = agent.actor_target(next_state)
+            #print('action: {}'.format(action.shape))
+            all_next_actions.append(next_action)
+        #print('all_actions: {}'.format(all_actions.shape))
+
         all_actions = []
         for i, agent in enumerate(self.agents):
-            states, _, _, _, _ = experiences
             agent_id = torch.tensor([i])
             state = states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
@@ -69,7 +80,7 @@ class MADDPG():
         #print('all_actions: {}'.format(all_actions.shape))
 
         for i, agent in enumerate(self.agents):
-            agent.learn(i, experiences, gamma, all_actions)
+            agent.learn(i, experiences, gamma, all_next_actions, all_actions)
 
 
 class DDPG():
@@ -138,7 +149,7 @@ class DDPG():
         self.noise.reset()
 
 
-    def learn(self, agent_id, experiences, gamma, all_actions):
+    def learn(self, agent_id, experiences, gamma, all_next_actions, all_actions):
         """Update policy and value parameters using given batch of experience tuples.
         Q_targets = r + γ * critic_target(next_state, actor_target(next_state))
         where:
@@ -158,7 +169,9 @@ class DDPG():
         self.critic_optimizer.zero_grad()
         agent_id = torch.tensor([agent_id])
         #print('next_states: {}'.format(next_states.shape))
-        actions_next = self.actor_target(next_states.reshape(-1, 2, 24)).reshape(-1, 4)
+        #actions_next = self.actor_target(next_states.reshape(-1, 2, 24)).reshape(-1, 4)
+        #print(actions_pred[1].shape)
+        actions_next = torch.cat(all_next_actions, dim=1)
         #print('actions_next: {}'.format(actions_next.shape))
         with torch.no_grad():
             q_targets_next = self.critic_target(next_states, actions_next)  # TODO no_grad?
@@ -175,7 +188,7 @@ class DDPG():
         #print(agent_id, q_expected.shape, q_targets.shape)
         #huber_loss = torch.nn.SmoothL1Loss()
         #critic_loss = huber_loss(q_expected, q_targets.detach())
-        critic_loss = F.mse_loss(q_expected, q_targets.detach())
+        critic_loss = F.mse_loss(q_expected, q_targets.detach())   # TODO keep detach()?
         #print(agent_id, critic_loss)
         # minimize loss
         critic_loss.backward()
@@ -225,7 +238,7 @@ class DDPG():
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.4):
         """Initialize parameters and noise process."""
         random.seed(seed)
         np.random.seed(seed)

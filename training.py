@@ -32,7 +32,7 @@ def train(environment, agent, n_episodes=5000, max_t=1000,
         # loop over steps
         for t in range(max_t):
             # select an action
-            #print(state)
+            #print(t, state)
             action = agent.act(state)
             #print(action)
             # take action in environment
