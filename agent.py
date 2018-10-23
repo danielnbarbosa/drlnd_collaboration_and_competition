@@ -17,12 +17,12 @@ class MADDPG():
 
     def __init__(self, models, action_size=2, seed=0, load_file=None,
                  buffer_size=int(1e5),
-                 batch_size=128,
-                 update_every=4,
+                 batch_size=64,
+                 update_every=2,
                  gamma=0.99,
                  n_agents=2,
-                 noise_start=2.0,
-                 noise_decay=0.99999):
+                 noise_start=1.0,
+                 noise_decay=1.0):
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.update_every = update_every
@@ -175,9 +175,13 @@ class DDPG():
         #print('actions_next: {}'.format(actions_next.shape))
         with torch.no_grad():
             q_targets_next = self.critic_target(next_states, actions_next)  # TODO no_grad?
+            #q_targets_next = self.critic_target(torch.cat((next_states[:, 16:24], next_states[:, 40:48]), dim=1), actions_next)  # TODO no_grad?
+
         #print('q_targets_next: {}'.format(q_targets_next.shape))
         # compute Q targets for current states (y_i)
         q_expected = self.critic_local(states, actions)
+        #print(self.id, q_expected)
+        #q_expected = self.critic_local(torch.cat((states[:, 16:24], states[:, 40:48]), dim=1), actions)
         #print('q_expected: {}'.format(q_expected.shape))
         #print(agent_id, actions_next.shape, q_targets_next.shape, q_expected.shape)
         # compute critic loss
@@ -207,6 +211,7 @@ class DDPG():
         #print(actions_pred[1].shape)
         actions_pred = torch.cat(actions_pred, dim=1)
         actor_loss = -self.critic_local(states, actions_pred).mean()
+        #actor_loss = -self.critic_local(torch.cat((states[:, 16:24], states[:, 40:48]), dim=1), actions_pred).mean()
         # minimize loss
         #actor_loss.backward(retain_graph=True)
         actor_loss.backward()
@@ -238,7 +243,7 @@ class DDPG():
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.4):
+    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
         """Initialize parameters and noise process."""
         random.seed(seed)
         np.random.seed(seed)
@@ -294,11 +299,11 @@ class ReplayBuffer():
         #print('sampling:')
         #for i, e in enumerate(experiences):
         #    print('------ experience {}:'.format(i))
-        #    print(e.state.shape)
-        #    print(len(e.action))
-        #    print(len(e.reward))
-        #    print(e.next_state.shape)
-        #    print(len(e.done))
+        #    print(np.sum(e.state))
+        #    print(e.action)
+        #    print(e.reward)
+        #    print(np.sum(e.next_state))
+        #    print(e.done)
         states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
         actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).float().to(device)
         rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
