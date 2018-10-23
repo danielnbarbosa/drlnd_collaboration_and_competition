@@ -19,7 +19,7 @@ def hidden_init(layer):
 class LowDimActor(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, fc1_units=48, fc2_units=24):
+    def __init__(self, state_size, action_size, seed, fc1_units=32, fc2_units=16):
         """Initialize parameters and build model.
         Params
         ======
@@ -53,7 +53,7 @@ class LowDimActor(nn.Module):
 class LowDimCritic(nn.Module):
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size, seed, fcs1_units=96, fc2_units=48):
+    def __init__(self, state_size, action_size, seed, fcs1_units=32, fc2_units=16):
         """Initialize parameters and build model.
         Params
         ======
@@ -65,8 +65,8 @@ class LowDimCritic(nn.Module):
         """
         super(LowDimCritic, self).__init__()
         self.seed = torch.manual_seed(seed)
-        self.fcs1 = nn.Linear(state_size, fcs1_units)
-        self.fc2 = nn.Linear(fcs1_units+action_size*2, fc2_units)  # TODO paramaterize by n_agents
+        self.fcs1 = nn.Linear(state_size+action_size*2, fcs1_units)
+        self.fc2 = nn.Linear(fcs1_units, fc2_units)  # TODO paramaterize by n_agents
         self.fc3 = nn.Linear(fc2_units, 1)
         self.reset_parameters()
 
@@ -83,8 +83,9 @@ class LowDimCritic(nn.Module):
         #action = action.reshape((-1, 4))
         #print('action pst:  {}'.format(action.shape))
         #print('state pst:  {}'.format(state.shape))
-        xs = F.relu(self.fcs1(state))
-        x = torch.cat((xs, action), dim=1)
+        xs = torch.cat((state, action), dim=1)
+        x = F.relu(self.fcs1(xs))
+
         #print('x:  {}'.format(x.shape))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -96,7 +97,7 @@ class LowDimCritic(nn.Module):
 # Initialize local and target network with identical initial weights.
 
 class LowDim2x():
-    def __init__(self, state_size=24, action_size=2, seed=0):
+    def __init__(self, state_size=8, action_size=2, seed=0):
         self.actor_local = LowDimActor(state_size, action_size, seed).to(device)
         self.actor_target = LowDimActor(state_size, action_size, seed).to(device)
         self.critic_local = LowDimCritic(state_size*2, action_size, seed).to(device)  # TODO paramaterize by n_agents

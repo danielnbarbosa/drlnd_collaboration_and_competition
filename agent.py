@@ -35,8 +35,8 @@ class MADDPG():
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)
 
     def step(self, all_states, all_actions, all_rewards, all_next_states, all_dones):
-        all_states = all_states.reshape(1, -1)  # reshape 2x24 into 1x48 dim vector
-        all_next_states = all_next_states.reshape(1, -1)  # reshape 2x24 into 1x48 dim vector
+        all_states = all_states.reshape(1, -1)  # reshape 2x8 into 1x16 dim vector
+        all_next_states = all_next_states.reshape(1, -1)  # reshape 2x8 into 1x16 dim vector
         #print((all_states.shape, all_actions.shape, len(all_rewards), all_next_states.shape, len(all_dones)))
         self.memory.add(all_states, all_actions, all_rewards, all_next_states, all_dones)
         # Learn every update_every time steps.
@@ -62,7 +62,7 @@ class MADDPG():
         all_next_actions = []
         for i, agent in enumerate(self.agents):
             agent_id = torch.tensor([i])
-            next_state = next_states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
+            next_state = next_states.reshape(-1, 2, 8).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
             next_action = agent.actor_target(next_state)
             #print('action: {}'.format(action.shape))
@@ -72,7 +72,7 @@ class MADDPG():
         all_actions = []
         for i, agent in enumerate(self.agents):
             agent_id = torch.tensor([i])
-            state = states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
+            state = states.reshape(-1, 2, 8).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
             action = agent.actor_local(state)
             #print('action: {}'.format(action.shape))

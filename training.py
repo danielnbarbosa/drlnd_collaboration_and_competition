@@ -7,7 +7,7 @@ import torch
 import statistics
 
 
-def train(environment, agent, n_episodes=5000, max_t=1000,
+def train(environment, agent, n_episodes=5000000, max_t=1000,
           solve_score=0.5,
           graph_when_done=True):
     """ Run training loop for DQN.
@@ -29,6 +29,7 @@ def train(environment, agent, n_episodes=5000, max_t=1000,
     for i_episode in range(1, n_episodes+1):
         rewards = []
         state = environment.reset()
+        state = state[:, 16:24]
         # loop over steps
         for t in range(max_t):
             # select an action
@@ -37,6 +38,7 @@ def train(environment, agent, n_episodes=5000, max_t=1000,
             #print(action)
             # take action in environment
             next_state, reward, done = environment.step(action)
+            next_state = next_state[:, 16:24]
             # update agent with returned information
             agent.step(state, action, reward, next_state, done)
             state = next_state
