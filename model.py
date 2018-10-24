@@ -19,7 +19,7 @@ def hidden_init(layer):
 class LowDimActor(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, fc1_units=32, fc2_units=16):
+    def __init__(self, state_size, action_size, seed, fc1_units=64, fc2_units=64):
         """Initialize parameters and build model.
         Params
         ======
@@ -53,7 +53,7 @@ class LowDimActor(nn.Module):
 class LowDimCritic(nn.Module):
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size, seed, fcs1_units=32, fc2_units=16):
+    def __init__(self, state_size, action_size, seed, fcs1_units=64, fc2_units=64):
         """Initialize parameters and build model.
         Params
         ======
