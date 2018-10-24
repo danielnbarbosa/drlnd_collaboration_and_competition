@@ -41,15 +41,28 @@ class Stats():
         """Define solve criteria."""
         return self.avg_score >= solve_score and i_episode >= 100
 
-    def print_episode(self, i_episode, steps, stats_format, buffer_len, noise):
+    def print_episode(self, i_episode, steps, stats_format, buffer_len, noise_weight,
+                     critic_loss_01, critic_loss_02,
+                     actor_loss_01, actor_loss_02,
+                     noise_val_01, noise_val_02,
+                     rewards_01, rewards_02):
         common_stats = 'Episode: {:5}   Avg: {:8.3f}   BestAvg: {:8.3f}   σ: {:8.3f}  |  Steps: {:8}   Reward: {:8.3f}  |  '.format(i_episode, self.avg_score, self.best_avg_score, self.std_dev, steps, self.score)
-        print( '\r' + common_stats + stats_format.format(buffer_len, noise), end="")
-        self.writer.add_scalar('data/reward', self.score, i_episode)
-        self.writer.add_scalar('data/std_dev', self.std_dev, i_episode)
-        self.writer.add_scalar('data/avg_reward', self.avg_score, i_episode)
-        self.writer.add_scalar('data/buffer_len', buffer_len, i_episode)
-        self.writer.add_scalar('data/noise', noise, i_episode)
-
+        print( '\r' + common_stats + stats_format.format(buffer_len, noise_weight), end="")
+        self.writer.add_scalar('global/reward', self.score, i_episode)
+        self.writer.add_scalar('global/std_dev', self.std_dev, i_episode)
+        self.writer.add_scalar('global/avg_reward', self.avg_score, i_episode)
+        self.writer.add_scalar('global/buffer_len', buffer_len, i_episode)
+        self.writer.add_scalar('global/noise_weight', noise_weight, i_episode)
+        self.writer.add_scalar('agent_01/critic_loss', critic_loss_01, i_episode)
+        self.writer.add_scalar('agent_02/critic_loss', critic_loss_02, i_episode)
+        self.writer.add_scalar('agent_01/actor_loss', actor_loss_01, i_episode)
+        self.writer.add_scalar('agent_02/actor_loss', actor_loss_02, i_episode)
+        self.writer.add_scalar('agent_01/noise_val_01', noise_val_01[0], i_episode)
+        self.writer.add_scalar('agent_01/noise_val_02', noise_val_01[1], i_episode)
+        self.writer.add_scalar('agent_02/noise_val_01', noise_val_02[0], i_episode)
+        self.writer.add_scalar('agent_02/noise_val_02', noise_val_02[1], i_episode)
+        self.writer.add_scalar('agent_01/reward', rewards_01, i_episode)
+        self.writer.add_scalar('agent_02/reward', rewards_02, i_episode)
 
     def print_epoch(self, i_episode, stats_format, *args):
         n_secs = int(time.time() - self.time_start)

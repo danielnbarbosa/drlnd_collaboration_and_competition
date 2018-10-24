@@ -10,6 +10,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class MADDPG():
@@ -28,7 +29,7 @@ class MADDPG():
         self.update_every = update_every
         self.gamma = gamma
         self.n_agents = n_agents
-        self.noise = noise_start
+        self.noise_weight = noise_start
         self.noise_decay = noise_decay
         self.t_step = 0
         self.agents = [DDPG(0, models[0], load_file=None), DDPG(1, models[1], load_file=None)]
@@ -51,8 +52,8 @@ class MADDPG():
         all_actions = []
         for agent, state in zip(self.agents, all_states):
             #print(all_states.shape, state.shape)
-            action = agent.act(state, noise=self.noise, add_noise=True)
-            self.noise *= self.noise_decay
+            action = agent.act(state, noise_weight=self.noise_weight, add_noise=True)
+            self.noise_weight *= self.noise_decay
             all_actions.append(action)
         return np.array(all_actions).reshape(1, -1) # reshape 2x2 into 1x4 dim vector
 
@@ -112,6 +113,9 @@ class DDPG():
         self.lr_critic = lr_critic
 
         self.loss_list = []       # track loss across steps
+        self.critic_loss = 0
+        self.actor_loss = 0
+        self.noise_val = 0
 
         # Actor Network
         self.actor_local = model.actor_local
@@ -132,7 +136,7 @@ class DDPG():
         # Noise process
         self.noise = OUNoise(action_size, seed)
 
-    def act(self, state, noise=1.0, add_noise=True):
+    def act(self, state, noise_weight=1.0, add_noise=True):
         """Returns actions for given state as per current policy."""
         state = torch.from_numpy(state).float().to(device)
         # calculate action values
@@ -141,7 +145,8 @@ class DDPG():
             action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
         if add_noise:
-            action += self.noise.sample() * noise
+            self.noise_val = self.noise.sample() * noise_weight
+            action += self.noise_val
         return np.clip(action, -1, 1)
 
 
@@ -193,9 +198,11 @@ class DDPG():
         #huber_loss = torch.nn.SmoothL1Loss()
         #critic_loss = huber_loss(q_expected, q_targets.detach())
         critic_loss = F.mse_loss(q_expected, q_targets.detach())   # TODO keep detach()?
+        self.critic_loss = critic_loss.item()
         #print(agent_id, critic_loss)
         # minimize loss
         critic_loss.backward()
+        #torch.nn.utils.clip_grad_norm_(self.critic_local.parameters(), 2, norm_type=2)  # TODO keep this?
         self.critic_optimizer.step()
 
         # ---------------------------- update actor ---------------------------- #
@@ -211,10 +218,12 @@ class DDPG():
         #print(actions_pred[1].shape)
         actions_pred = torch.cat(actions_pred, dim=1)
         actor_loss = -self.critic_local(states, actions_pred).mean()
+        self.actor_loss = actor_loss.item()
         #actor_loss = -self.critic_local(torch.cat((states[:, 16:24], states[:, 40:48]), dim=1), actions_pred).mean()
         # minimize loss
         #actor_loss.backward(retain_graph=True)
         actor_loss.backward()
+        #torch.nn.utils.clip_grad_norm_(self.actor_local.parameters(), 2, norm_type=2)  # TODO keep this?
         self.actor_optimizer.step()
 
         # ----------------------- update target networks ----------------------- #
