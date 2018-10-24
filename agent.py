@@ -76,7 +76,7 @@ class MADDPG():
         for i, agent in enumerate(self.agents):
             _, _, _, next_states, _ = experiences[i]
             agent_id = torch.tensor([i])
-            next_state = next_states.reshape(-1, 2, 8).index_select(1, agent_id).squeeze(1)
+            next_state = next_states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
             next_action = agent.actor_target(next_state)
             #print('action: {}'.format(action.shape))
@@ -87,7 +87,7 @@ class MADDPG():
         for i, agent in enumerate(self.agents):
             states, _, _, _, _ = experiences[i]
             agent_id = torch.tensor([i])
-            state = states.reshape(-1, 2, 8).index_select(1, agent_id).squeeze(1)
+            state = states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
             action = agent.actor_local(state)
             #print('action: {}'.format(action.shape))

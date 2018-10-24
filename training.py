@@ -29,7 +29,7 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
     for i_episode in range(1, n_episodes+1):
         rewards = []
         state = environment.reset()
-        state = state[:, 16:24]
+        #state = state[:, 16:24]
         # loop over steps
         for t in range(max_t):
             # select an action
@@ -41,7 +41,7 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
             #print(action)
             # take action in environment
             next_state, reward, done = environment.step(action)
-            next_state = next_state[:, 16:24]
+            #next_state = next_state[:, 16:24]
             # update agent with returned information
             agent.step(state, action, reward, next_state, done)
             state = next_state
@@ -62,7 +62,7 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
             for step in rewards:
                 per_agent_reward += step[i]
             per_agent_rewards.append(per_agent_reward)
-        stats.update(t, [np.mean(per_agent_rewards)], i_episode)
+        stats.update(t, [np.max(per_agent_rewards)], i_episode)
         stats.print_episode(i_episode, t, stats_format, buffer_len, agent.noise_weight,
                             agent.agents[0].critic_loss, agent.agents[1].critic_loss,
                             agent.agents[0].actor_loss, agent.agents[1].actor_loss,

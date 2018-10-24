@@ -19,7 +19,7 @@ def hidden_init(layer):
 class LowDimActor(nn.Module):
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, fc1_units=64, fc2_units=64):
+    def __init__(self, state_size, action_size, seed, fc1_units=400, fc2_units=300):
         """Initialize parameters and build model.
         Params
         ======
@@ -53,7 +53,7 @@ class LowDimActor(nn.Module):
 class LowDimCritic(nn.Module):
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size, seed, fcs1_units=64, fc2_units=64):
+    def __init__(self, state_size, action_size, seed, fcs1_units=400, fc2_units=300):
         """Initialize parameters and build model.
         Params
         ======
@@ -97,7 +97,7 @@ class LowDimCritic(nn.Module):
 # Initialize local and target network with identical initial weights.
 
 class LowDim2x():
-    def __init__(self, state_size=8, action_size=2, seed=0):
+    def __init__(self, state_size=24, action_size=2, seed=0):
         self.actor_local = LowDimActor(state_size, action_size, seed).to(device)
         self.actor_target = LowDimActor(state_size, action_size, seed).to(device)
         self.critic_local = LowDimCritic(state_size*2, action_size, seed).to(device)  # TODO paramaterize by n_agents
