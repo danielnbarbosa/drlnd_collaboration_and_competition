@@ -105,7 +105,7 @@ class DDPG():
                  tau=1e-3,
                  lr_actor=1e-4,
                  lr_critic=1e-3,
-                 weight_decay=0.0001):
+                 weight_decay=0.0000):
         """
         Params
         ======
