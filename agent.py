@@ -17,8 +17,8 @@ class MADDPG():
     """Meta agent."""
 
     def __init__(self, models, action_size=2, seed=0, load_file=None,
-                 buffer_size=int(1e5),
-                 batch_size=64,
+                 buffer_size=int(3e4),
+                 batch_size=128,
                  update_every=2,
                  gamma=0.99,
                  n_agents=2,
