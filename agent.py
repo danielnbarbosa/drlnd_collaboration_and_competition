@@ -58,7 +58,7 @@ class MADDPG():
         if self.t_step == 0 and self.evaluation_only == False:
             # If enough samples are available in memory, get random subset and learn
             if len(self.memory) > self.batch_size:
-                experiences = self.memory.sample()
+                experiences = [self.memory.sample(), self.memory.sample()]
                 self.learn(experiences, self.gamma)
 
     def act(self, all_states, add_noise=True):
@@ -71,10 +71,10 @@ class MADDPG():
         return np.array(all_actions).reshape(1, -1) # reshape 2x2 into 1x4 dim vector
 
     def learn(self, experiences, gamma):
-        states, _, _, next_states, _ = experiences
 
         all_next_actions = []
         for i, agent in enumerate(self.agents):
+            _, _, _, next_states, _ = experiences[i]
             agent_id = torch.tensor([i])
             next_state = next_states.reshape(-1, 2, 8).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
@@ -85,6 +85,7 @@ class MADDPG():
 
         all_actions = []
         for i, agent in enumerate(self.agents):
+            states, _, _, _, _ = experiences[i]
             agent_id = torch.tensor([i])
             state = states.reshape(-1, 2, 8).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
@@ -94,7 +95,7 @@ class MADDPG():
         #print('all_actions: {}'.format(all_actions.shape))
 
         for i, agent in enumerate(self.agents):
-            agent.learn(i, experiences, gamma, all_next_actions, all_actions)
+            agent.learn(i, experiences[i], gamma, all_next_actions, all_actions)
 
 
 class DDPG():
