@@ -75,7 +75,7 @@ class MADDPG():
         all_next_actions = []
         for i, agent in enumerate(self.agents):
             _, _, _, next_states, _ = experiences[i]
-            agent_id = torch.tensor([i])
+            agent_id = torch.tensor([i]).to(device)
             next_state = next_states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
             next_action = agent.actor_target(next_state)
@@ -86,7 +86,7 @@ class MADDPG():
         all_actions = []
         for i, agent in enumerate(self.agents):
             states, _, _, _, _ = experiences[i]
-            agent_id = torch.tensor([i])
+            agent_id = torch.tensor([i]).to(device)
             state = states.reshape(-1, 2, 24).index_select(1, agent_id).squeeze(1)
             #print('state: {}'.format(state.shape))
             action = agent.actor_local(state)
@@ -178,11 +178,11 @@ class DDPG():
         # ---------------------------- update critic ---------------------------- #
         # get predicted next-state actions and Q values from target models
         self.critic_optimizer.zero_grad()
-        agent_id = torch.tensor([agent_id])
+        agent_id = torch.tensor([agent_id]).to(device)
         #print('next_states: {}'.format(next_states.shape))
         #actions_next = self.actor_target(next_states.reshape(-1, 2, 24)).reshape(-1, 4)
         #print(actions_pred[1].shape)
-        actions_next = torch.cat(all_next_actions, dim=1)
+        actions_next = torch.cat(all_next_actions, dim=1).to(device)
         #print('actions_next: {}'.format(actions_next.shape))
         with torch.no_grad():
             q_targets_next = self.critic_target(next_states, actions_next)  # TODO no_grad?
@@ -222,7 +222,7 @@ class DDPG():
 
         actions_pred = [actions if i == self.id else actions.detach() for i, actions in enumerate(all_actions)]
         #print(actions_pred[1].shape)
-        actions_pred = torch.cat(actions_pred, dim=1)
+        actions_pred = torch.cat(actions_pred, dim=1).to(device)
         actor_loss = -self.critic_local(states, actions_pred).mean()
         self.actor_loss = actor_loss.item()
         #actor_loss = -self.critic_local(torch.cat((states[:, 16:24], states[:, 40:48]), dim=1), actions_pred).mean()
