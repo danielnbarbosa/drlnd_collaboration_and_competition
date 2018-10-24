@@ -34,7 +34,10 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
         for t in range(max_t):
             # select an action
             #print(t, state)
-            action = agent.act(state)
+            if agent.evaluation_only:  # disable noise on evaluation
+                action = agent.act(state, add_noise=False)
+            else:
+                action = agent.act(state)
             #print(action)
             # take action in environment
             next_state, reward, done = environment.step(action)
@@ -42,7 +45,7 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
             # update agent with returned information
             agent.step(state, action, reward, next_state, done)
             state = next_state
-            #reward = [r * 100 for r in reward]
+            #reward = [r + 0.001 for r in reward]
             rewards.append(reward)
             # DEBUG rewards and dones per step
             #print(reward)
@@ -70,16 +73,22 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
         if i_episode % 100 == 0:
             stats.print_epoch(i_episode, stats_format, buffer_len, agent.noise_weight)
             save_name = 'checkpoints/episode.{}'.format(i_episode)
-            #torch.save(agent.actor_local.state_dict(), save_name + '.actor.pth')
-            #torch.save(agent.critic_local.state_dict(), save_name + '.critic.pth')
+            torch.save(agent.agents[0].actor_local.state_dict(), save_name + '.1.actor.pth')
+            torch.save(agent.agents[0].critic_local.state_dict(), save_name + '.1.critic.pth')
+            torch.save(agent.agents[1].actor_local.state_dict(), save_name + '.2.actor.pth')
+            torch.save(agent.agents[1].critic_local.state_dict(), save_name + '.2.critic.pth')
 
         # if solved
         if stats.is_solved(i_episode, solve_score):
             stats.print_solve(i_episode, stats_format, buffer_len, agent.noise_weight)
             #torch.save(agent.actor_local.state_dict(), 'checkpoints/solved.actor.pth')
             #torch.save(agent.critic_local.state_dict(), 'checkpoints/solved.critic.pth')
+            torch.save(agent.agents[0].actor_local.state_dict(), 'checkpoints/solved.1.actor.pth')
+            torch.save(agent.agents[0].critic_local.state_dict(), 'checkpoints/solved.1.critic.pth')
+            torch.save(agent.agents[1].actor_local.state_dict(), 'checkpoints/solved.2.actor.pth')
+            torch.save(agent.agents[1].critic_local.state_dict(), 'checkpoints/solved.2.critic.pth')
             break
 
     # training finished
     if graph_when_done:
-        stats.plot(agent.loss_list)
+        stats.plot()

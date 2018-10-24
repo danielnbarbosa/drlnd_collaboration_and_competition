@@ -23,7 +23,8 @@ class MADDPG():
                  gamma=0.99,
                  n_agents=2,
                  noise_start=1.0,
-                 noise_decay=1.0):
+                 noise_decay=1.0,
+                 evaluation_only=False):
         self.buffer_size = buffer_size
         self.batch_size = batch_size
         self.update_every = update_every
@@ -32,8 +33,20 @@ class MADDPG():
         self.noise_weight = noise_start
         self.noise_decay = noise_decay
         self.t_step = 0
+        self.evaluation_only = evaluation_only
         self.agents = [DDPG(0, models[0], load_file=None), DDPG(1, models[1], load_file=None)]
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)
+
+        if load_file:
+            self.agents[0].actor_local.load_state_dict(torch.load(load_file + '.1.actor.pth'))
+            self.agents[0].actor_target.load_state_dict(torch.load(load_file + '.1.actor.pth'))
+            self.agents[0].critic_local.load_state_dict(torch.load(load_file + '.1.critic.pth'))
+            self.agents[0].critic_target.load_state_dict(torch.load(load_file + '.1.critic.pth'))
+            self.agents[1].actor_local.load_state_dict(torch.load(load_file + '.2.actor.pth'))
+            self.agents[1].actor_target.load_state_dict(torch.load(load_file + '.2.actor.pth'))
+            self.agents[1].critic_local.load_state_dict(torch.load(load_file + '.2.critic.pth'))
+            self.agents[1].critic_target.load_state_dict(torch.load(load_file + '.2.critic.pth'))
+            print('Loaded: {}'.format(load_file))
 
     def step(self, all_states, all_actions, all_rewards, all_next_states, all_dones):
         all_states = all_states.reshape(1, -1)  # reshape 2x8 into 1x16 dim vector
@@ -42,13 +55,13 @@ class MADDPG():
         self.memory.add(all_states, all_actions, all_rewards, all_next_states, all_dones)
         # Learn every update_every time steps.
         self.t_step = (self.t_step + 1) % self.update_every
-        if self.t_step == 0:
+        if self.t_step == 0 and self.evaluation_only == False:
             # If enough samples are available in memory, get random subset and learn
             if len(self.memory) > self.batch_size:
                 experiences = self.memory.sample()
                 self.learn(experiences, self.gamma)
 
-    def act(self, all_states):
+    def act(self, all_states, add_noise=True):
         all_actions = []
         for agent, state in zip(self.agents, all_states):
             #print(all_states.shape, state.shape)
@@ -112,7 +125,6 @@ class DDPG():
         self.lr_actor = lr_actor
         self.lr_critic = lr_critic
 
-        self.loss_list = []       # track loss across steps
         self.critic_loss = 0
         self.actor_loss = 0
         self.noise_val = 0
@@ -125,13 +137,6 @@ class DDPG():
         self.critic_local = model.critic_local
         self.critic_target = model.critic_target
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=lr_critic, weight_decay=weight_decay)
-
-        if load_file:
-            self.actor_local.load_state_dict(torch.load(load_file + '.actor.pth'))
-            self.actor_target.load_state_dict(torch.load(load_file + '.actor.pth'))
-            self.critic_local.load_state_dict(torch.load(load_file + '.critic.pth'))
-            self.critic_target.load_state_dict(torch.load(load_file + '.critic.pth'))
-            print('Loaded: {}'.format(load_file))
 
         # Noise process
         self.noise = OUNoise(action_size, seed)
@@ -229,10 +234,6 @@ class DDPG():
         # ----------------------- update target networks ----------------------- #
         self.soft_update(self.critic_local, self.critic_target, self.tau)
         self.soft_update(self.actor_local, self.actor_target, self.tau)
-
-        # ---------------------------- update stats ---------------------------- #
-        with torch.no_grad():
-            self.loss_list.append(critic_loss.item())
 
 
     def soft_update(self, local_model, target_model, tau):

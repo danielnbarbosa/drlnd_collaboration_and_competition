@@ -73,15 +73,10 @@ class Stats():
         self.print_epoch(i_episode, stats_format, *args)
         print('\nSolved in {:d} episodes!'.format(i_episode-100))
 
-    def plot(self, loss_list):
+    def plot(self):
         """Plot stats in nice graphs."""
-        window_size = len(loss_list) // 100 # window size is 1% of total steps
         plt.figure(1)
         # plot score
-        sub_plot(221, self.scores, y_label='Score')
-        sub_plot(223, self.avg_scores, y_label='Avg Score', x_label='Episodes')
-        # plot loss
-        sub_plot(222, loss_list, y_label='Loss')
-        avg_loss = np.convolve(loss_list, np.ones((window_size,))/window_size, mode='valid')
-        sub_plot(224, avg_loss, y_label='Avg Loss', x_label='Steps')
+        sub_plot(121, self.scores, y_label='Score')
+        sub_plot(122, self.avg_scores, y_label='Avg Score', x_label='Episodes')
         plt.show()
