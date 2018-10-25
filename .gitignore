@@ -1,6 +1,5 @@
 __pycache__
 unity-environment.log
-Tennis.app
 runs
 episode.*.pth
 solved.*.pth

@@ -2,16 +2,22 @@
 UnityML Environment.
 """
 
-
+import platform
 from unityagents import UnityEnvironment
 
 class UnityMLVectorMultiAgent():
     """Multi-agent UnityML environment with vector observations."""
 
-    def __init__(self, name='Tennis.app', seed=0):
+    def __init__(self, seed=0):
         self.seed = seed
         print('SEED: {}'.format(self.seed))
-        self.env = UnityEnvironment(file_name=name, seed=seed)
+        # choose correct unity environment for platform
+        os = platform.system()
+        if os == 'Darwin':
+            file_name='unity_envs/Tennis.app'
+        elif os == 'Linux':
+            file_name='unity_envs/Tennis_Linux/Tennis.x86_64'
+        self.env = UnityEnvironment(file_name=file_name, seed=seed)
         self.brain_name = self.env.brain_names[0]
 
     def reset(self):
