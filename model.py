@@ -51,7 +51,7 @@ class LowDimActor(nn.Module):
 class LowDimCritic(nn.Module):
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size, seed, fcs1_units=400, fc2_units=300):
+    def __init__(self, n_agents, state_size, action_size, seed, fcs1_units=400, fc2_units=300):
         """Initialize parameters and build model.
         Params
         ======
@@ -63,8 +63,8 @@ class LowDimCritic(nn.Module):
         """
         super(LowDimCritic, self).__init__()
         self.seed = torch.manual_seed(seed)
-        self.fcs1 = nn.Linear(state_size+action_size*2, fcs1_units)
-        self.fc2 = nn.Linear(fcs1_units, fc2_units)  # TODO paramaterize by n_agents
+        self.fcs1 = nn.Linear(state_size+action_size*n_agents, fcs1_units)
+        self.fc2 = nn.Linear(fcs1_units, fc2_units)
         self.fc3 = nn.Linear(fc2_units, 1)
         self.reset_parameters()
 
@@ -84,11 +84,11 @@ class LowDimCritic(nn.Module):
 # Initialize local and target network with identical initial weights.
 
 class LowDim2x():
-    def __init__(self, state_size=24, action_size=2, seed=0):
+    def __init__(self, n_agents, state_size=24, action_size=2, seed=0):
         self.actor_local = LowDimActor(state_size, action_size, seed).to(device)
         self.actor_target = LowDimActor(state_size, action_size, seed).to(device)
-        self.critic_local = LowDimCritic(state_size*2, action_size, seed).to(device)  # TODO paramaterize by n_agents
-        self.critic_target = LowDimCritic(state_size*2, action_size, seed).to(device)  # TODO paramaterize by n_agents
+        self.critic_local = LowDimCritic(n_agents, state_size*n_agents, action_size, seed).to(device)
+        self.critic_target = LowDimCritic(n_agents, state_size*n_agents, action_size, seed).to(device)
         print(self.actor_local)
         summary(self.actor_local, (state_size,))
         print(self.critic_local)

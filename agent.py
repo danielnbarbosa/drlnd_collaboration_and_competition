@@ -74,7 +74,7 @@ class MADDPG():
             # If enough samples are available in memory, get random subset and learn
             if len(self.memory) > self.batch_size:
                 # each agent does it's own sampling from the replay buffer
-                experiences = [self.memory.sample(), self.memory.sample()]
+                experiences = [self.memory.sample() for _ in range(self.n_agents)]
                 self.learn(experiences, self.gamma)
 
     def act(self, all_states, add_noise=True):

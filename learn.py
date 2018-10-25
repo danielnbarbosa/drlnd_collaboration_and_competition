@@ -9,6 +9,7 @@ args = parser.parse_args()
 
 # create objects and run training
 environment = environment.UnityMLVectorMultiAgent()
-models = [model.LowDim2x(), model.LowDim2x()]
-agent = agent.MADDPG(models, load_file=args.load)
+n_agents = 2
+models = [model.LowDim2x(n_agents=n_agents) for _ in range(n_agents)]
+agent = agent.MADDPG(models, n_agents=n_agents, load_file=args.load)
 training.train(environment, agent)
