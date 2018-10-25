@@ -1,3 +1,5 @@
+![tennis](assets/tennis_environment.png)
+
 ## Introduction
 This project is being done as part of the [Udacity Deep Reinforcement Learning Nanodegree](https://www.udacity.com/course/deep-reinforcement-learning-nanodegree--nd893), a four month course that I am enrolled in.
 
@@ -26,8 +28,6 @@ The task is episodic, and in order to solve the environment, the agents must get
 - This yields a single score for each episode.
 The environment is considered solved, when the average (over 100 episodes) of those scores is at least +0.5.
 
-Here's an example of a single observation of the environment:
-![tennis](assets/tennis_environment.png)
 
 ## Installation
 
@@ -42,7 +42,7 @@ Clone this repo using `git clone https://github.com/danielnbarbosa/drlnd_collabo
 #### Step 2: Install Dependencies
 Create an anaconda environment that contains all the required dependencies to run the project.
 
-Mac:
+##### Mac:
 ```
 conda create --name drlnd_collaboration_and_competition python=3.6
 source activate drlnd_collaboration_and_competition
@@ -51,7 +51,7 @@ conda install -y pytorch -c pytorch
 pip install torchsummary tensorboardX unityagents
 ```
 
-Windows:
+##### Windows:
 ```
 conda create --name drlnd_collaboration_and_competition python=3.6
 activate drlnd_collaboration_and_competition
@@ -59,18 +59,16 @@ conda install -y pytorch -c pytorch
 pip install torchsummary tensorboardX unityagents
 ```
 
-Linux:
+##### Linux:
 See separate [instructions](assets/linux_setup.md)
 
 ## Train your agent
-To train the agent run `main.py`.  This will fire up the Unity environment and output live training statistics to the command line as well as logging stats to the `runs` directory for visualizing via tensorboard.
+To train the agent run `./main.py`.  This will fire up the Unity environment and output live training statistics to the command line as well as logging stats to the 'runs' directory for visualizing via tensorboard.
 
-To load a saved model in evaluation mode run `main.py --eval --load=<path to files>`.  This will load the saved weights from a checkpoint file.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo.  To load this model run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
+To load a saved model in evaluation mode run `./main.py --eval --load=<path to files>`.  This will load the saved weights from checkpoint files.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo.  To load this model run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
 
 Note, Mac users may need to execute `pythonw main.py` instead of just `./main.py`.  This is due to matplotlib requiring a framework build of python on MacOS which is installed as pythonw.  More details [here](https://matplotlib.org/faq/osx_framework.html).
 
 
 ## Results
-My results are from training on a p2.xlarge instance in AWS.  With current hyperparameters it takes the agent 2531 episodes and about 818 seconds to solve the environment.  Feel to experiment with modifying the hyperparameters to see how it affects training.
-
-See the [report](Report.md) for more details on the implementation.
+My results are from training on a p2.xlarge instance in AWS.  With current hyperparameters it takes the agent 2531 episodes and about 818 seconds to solve the environment.  For more details on my implementation, see the [report](Report.md).
