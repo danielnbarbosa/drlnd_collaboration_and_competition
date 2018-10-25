@@ -3,7 +3,6 @@ The algorithm chosen to solve this environment is Multi-Agent Deep Deterministic
 
 For this environment I created two separate DDPG agents.  Each actor takes a 24 dimensional state input.  Each critic takes a concatenation of the states (48 dim) and actions (4 dim) from both agents.
 
-
 #### Hyperparameters
 The chosen hyperparameters closely follow those from the original [DDPG paper](https://arxiv.org/abs/1509.02971).  This includes:
   - Two layer networks, 400 hidden units in the first, 300 in the second, for both actor and critic models.

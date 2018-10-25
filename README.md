@@ -1,9 +1,7 @@
 ![tennis](assets/trained_agent.gif)
 
 ## Introduction
-This project uses Multi-Agent Deep Deterministic Policy Gradient (MADDPG) to train a pair of agents to play [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis).
-
-This project is being done as part of the [Udacity Deep Reinforcement Learning Nanodegree](https://www.udacity.com/course/deep-reinforcement-learning-nanodegree--nd893), a four month course that I am taking.
+This project uses Multi-Agent Deep Deterministic Policy Gradient (MADDPG) to train a pair of agents to play [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis).  This project is being done as part of the Udacity Deep Reinforcement Learning [Nanodegree](https://www.udacity.com/course/deep-reinforcement-learning-nanodegree--nd893), a four month course that I am taking.
 
 
 ## Environment Description
@@ -50,9 +48,9 @@ pip install torchsummary tensorboardX unityagents
 See separate [instructions](assets/linux_setup.md).
 
 ## Train your agent
-To train the agent run `./main.py`.  This will fire up the Unity environment and output live training statistics to the command line as well as logging stats to the 'runs' directory for visualizing via tensorboard.  To start tensorboard run `tensorboard --logdir runs`.
+To train the agent run `./main.py`.  This will start the agent training inside the Unity environment.  Statistics will be output to the command line as well as logged to the 'runs' directory for visualizing via tensorboard.  To start tensorboard run `tensorboard --logdir runs`.
 
-To load a saved model in evaluation mode run `./main.py --eval --load=<path to files>`.  This will load saved weights from checkpoint files.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo, to load this model run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
+To load a saved model in evaluation mode run `./main.py --eval --load=<path to files>`.  This will load saved weights from checkpoint files.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo, to load it run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
 
 
 ## Results
