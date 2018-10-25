@@ -1,7 +1,9 @@
 ## Learning Algorithm
-The algorithm chosen to solve this environment is Multi-Agent Deep Deterministic Policy Gradient (MADDPG).  MADDPG is a multi-agent version of DDPG.  Each agent has it's own actor and it's own critic.  Agents share a common experience replay buffer which contains tuples with states and actions from all agents.  Each agent does it's own sampling from this replay buffer.  This allows agents to learn their own reward function and incorporate the actions of other agents in their learning.  Therefore, we can train them in collaborative, competitive, or mixed environments.  More details can be found in the [MADDPG paper](https://arxiv.org/abs/1706.02275).
+The algorithm chosen to solve this environment is Multi-Agent Deep Deterministic Policy Gradient (MADDPG).  MADDPG is a multi-agent version of DDPG.  DDPG is well suited to continuous control tasks and this just extends it to a multi-agent scenario.
 
-For this environment I created two separate DDPG agents.  Each actor takes a 24 dimensional state input.  Each critic takes a concatenation of the states (48 dim) and actions (4 dim) from both agents.
+In MADDPG, each agent has it's own actor and it's own critic.  Agents share a common experience replay buffer which contains tuples with states and actions from all agents.  Each agent does it's own sampling from this replay buffer.  This allows agents to learn their own reward function and incorporate the actions of other agents in their learning.  Therefore, we can train them in collaborative, competitive, or mixed environments.  More details can be found in the [MADDPG paper](https://arxiv.org/abs/1706.02275).
+
+For this environment I created two separate DDPG agents.  Each actor takes a 24 dimensional state input.  Each critic takes a concatenation of the states (48 dimensions) and actions (4 dimensions) from both agents.
 
 #### Hyperparameters
 The chosen hyperparameters closely follow those from the original [DDPG paper](https://arxiv.org/abs/1509.02971).  This includes:
