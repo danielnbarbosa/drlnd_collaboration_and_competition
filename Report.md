@@ -5,7 +5,7 @@ Here's what the agent looks like after training.  It's a little choppy due to th
 
 
 ## Learning Algorithm
-The algorithm chosen to solve this environment is Multi-Agent Deep Deterministic Policy Gradient (MADDPG).  MADDPG is a multi-agent version of DDPG.  Each agent has it's own actor and it's own critic.  Agents share a common experience replay buffer which contains tuples with states and actions from all agents.  Each agent does it's own sampling from this replay buffer.  This allows agents to learn their own reward function and incorporate the actions of other agents in their learning.  Therefore, we can train then in collaborative, competitive, or mixed environments.  More details can be found in the [MADDPG paper](https://arxiv.org/abs/1706.02275).
+The algorithm chosen to solve this environment is Multi-Agent Deep Deterministic Policy Gradient (MADDPG).  MADDPG is a multi-agent version of DDPG.  Each agent has it's own actor and it's own critic.  Agents share a common experience replay buffer which contains tuples with states and actions from all agents.  Each agent does it's own sampling from this replay buffer.  This allows agents to learn their own reward function and incorporate the actions of other agents in their learning.  Therefore, we can train them in collaborative, competitive, or mixed environments.  More details can be found in the [MADDPG paper](https://arxiv.org/abs/1706.02275).
 
 For this environment I created two separate DDPG agents.  Each actor takes a 24 dimensional state input.  Each critic takes a concatenation of the states (48 dim) and actions (4 dim) from both agents.
 
@@ -19,6 +19,7 @@ The chosen hyperparameters closely follow those from the original [DDPG paper](h
   - Discount factor gamma of 0.99.
 
 A few minor changes were made which were found to speed up training:
+  - Replay buffer size of 3e5 vs 1e6.
   - Batch size of 128 vs 64.
   - Update gradients every 2 steps vs every step.
 
@@ -31,6 +32,7 @@ A couple critical changes were made, without which training was very poor:
 ## Plot of Rewards
 Using the supplied hyperparameters the agent is able to solve the environments in 2531 episodes.  See [here](assets/training_output.txt) for detailed training results.
 
+This graph shows the average reward over the last 100 consecutive episodes (after taking the maximum over both agents).
 ![results](assets/results.png)
 
 

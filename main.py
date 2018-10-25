@@ -15,6 +15,6 @@ parser.add_argument("--eval", help="run in evaluation mode.  no training.  no no
 args = parser.parse_args()
 
 # create environment and agent, then run training
-environment = environment.UnityMLVectorMultiAgent()
+environment = environment.UnityMLVectorMultiAgent(evaluation_only=args.eval)
 agent = agent.MADDPG(load_file=args.load, evaluation_only=args.eval)
 training.train(environment, agent)
