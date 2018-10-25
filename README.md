@@ -3,7 +3,7 @@
 ## Introduction
 This project is being done as part of the [Udacity Deep Reinforcement Learning Nanodegree](https://www.udacity.com/course/deep-reinforcement-learning-nanodegree--nd893), a four month course that I am enrolled in.
 
-We will use reinforcement learning to train an agent inside a [Unity-ML](https://github.com/Unity-Technologies/ml-agents) environment.  We will be working in an environment similar to [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis).
+We will use reinforcement learning to train an agent inside a [Unity-ML](https://github.com/Unity-Technologies/ml-agents) [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis) environment.
 
 
 ## Environment Description
@@ -31,16 +31,12 @@ The environment is considered solved, when the average (over 100 episodes) of th
 
 ## Installation
 
-#### Pre-requisites
-- Make sure you having a working version of [Anaconda](https://www.anaconda.com/download/) on your system.
-
-
 #### Step 1: Clone the repo
-Clone this repo using `git clone https://github.com/danielnbarbosa/drlnd_collaboration_and_competition.git`.
+Clone this repo using `git clone https://github.com/danielnbarbosa/drlnd_collaboration_and_competition.git`.  Pre-compiled Unity environments for MacOS and Linux are included in this repo.
 
 
 #### Step 2: Install Dependencies
-Create an anaconda environment that contains all the required dependencies to run the project.
+Create an [anaconda](https://www.anaconda.com/download/) environment that contains all the required dependencies to run the project.
 
 ##### Mac:
 ```
@@ -51,23 +47,15 @@ conda install -y pytorch -c pytorch
 pip install torchsummary tensorboardX unityagents
 ```
 
-##### Windows:
-```
-conda create --name drlnd_collaboration_and_competition python=3.6
-activate drlnd_collaboration_and_competition
-conda install -y pytorch -c pytorch
-pip install torchsummary tensorboardX unityagents
-```
-
 ##### Linux:
-See separate [instructions](assets/linux_setup.md)
+See separate [instructions](assets/linux_setup.md).
 
 ## Train your agent
 To train the agent run `./main.py`.  This will fire up the Unity environment and output live training statistics to the command line as well as logging stats to the 'runs' directory for visualizing via tensorboard.
 
-To load a saved model in evaluation mode run `./main.py --eval --load=<path to files>`.  This will load the saved weights from checkpoint files.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo.  To load this model run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
+To load a saved model in evaluation mode run `./main.py --eval --load=<path to files>`.  This will load the saved weights from checkpoint files.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo, to load this model run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
 
-Note, Mac users may need to execute `pythonw main.py` instead of just `./main.py`.  This is due to matplotlib requiring a framework build of python on MacOS which is installed as pythonw.  More details [here](https://matplotlib.org/faq/osx_framework.html).
+Mac users may need to execute `pythonw main.py` instead of just `./main.py`.  This is due to matplotlib requiring a framework build of python on MacOS which is installed as pythonw.  More details [here](https://matplotlib.org/faq/osx_framework.html).
 
 
 ## Results
