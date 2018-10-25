@@ -7,10 +7,10 @@ import torch
 import statistics
 
 
-def train(environment, agent, n_episodes=5000000, max_t=1000,
+def train(environment, agent, n_episodes=10000, max_t=1000,
           solve_score=0.5,
-          graph_when_done=True):
-    """ Run training loop for DQN.
+          graph_when_done=False):
+    """ Run training loop.
 
     Params
     ======
@@ -29,28 +29,19 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
     for i_episode in range(1, n_episodes+1):
         rewards = []
         state = environment.reset()
-        #state = state[:, 16:24]
         # loop over steps
         for t in range(max_t):
             # select an action
-            #print(t, state)
             if agent.evaluation_only:  # disable noise on evaluation
                 action = agent.act(state, add_noise=False)
             else:
                 action = agent.act(state)
-            #print(action)
             # take action in environment
             next_state, reward, done = environment.step(action)
-            #next_state = next_state[:, 16:24]
             # update agent with returned information
             agent.step(state, action, reward, next_state, done)
             state = next_state
-            #reward = [r + 0.001 for r in reward]
             rewards.append(reward)
-            # DEBUG rewards and dones per step
-            #print(reward)
-            #print(done)
-            #input('->')
             if any(done):
                 break
 
@@ -62,7 +53,7 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
             for step in rewards:
                 per_agent_reward += step[i]
             per_agent_rewards.append(per_agent_reward)
-        stats.update(t, [np.max(per_agent_rewards)], i_episode)
+        stats.update(t, [np.max(per_agent_rewards)], i_episode)  # use max over all agents as episode reward
         stats.print_episode(i_episode, t, stats_format, buffer_len, agent.noise_weight,
                             agent.agents[0].critic_loss, agent.agents[1].critic_loss,
                             agent.agents[0].actor_loss, agent.agents[1].actor_loss,
@@ -81,8 +72,6 @@ def train(environment, agent, n_episodes=5000000, max_t=1000,
         # if solved
         if stats.is_solved(i_episode, solve_score):
             stats.print_solve(i_episode, stats_format, buffer_len, agent.noise_weight)
-            #torch.save(agent.actor_local.state_dict(), 'checkpoints/solved.actor.pth')
-            #torch.save(agent.critic_local.state_dict(), 'checkpoints/solved.critic.pth')
             torch.save(agent.agents[0].actor_local.state_dict(), 'checkpoints/solved.1.actor.pth')
             torch.save(agent.agents[0].critic_local.state_dict(), 'checkpoints/solved.1.critic.pth')
             torch.save(agent.agents[1].actor_local.state_dict(), 'checkpoints/solved.2.actor.pth')

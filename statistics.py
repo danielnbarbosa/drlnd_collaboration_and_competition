@@ -48,6 +48,7 @@ class Stats():
                      rewards_01, rewards_02):
         common_stats = 'Episode: {:5}   Avg: {:8.3f}   BestAvg: {:8.3f}   σ: {:8.3f}  |  Steps: {:8}   Reward: {:8.3f}  |  '.format(i_episode, self.avg_score, self.best_avg_score, self.std_dev, steps, self.score)
         print( '\r' + common_stats + stats_format.format(buffer_len, noise_weight), end="")
+        # log lots of stuff to tensorboard
         self.writer.add_scalar('global/reward', self.score, i_episode)
         self.writer.add_scalar('global/std_dev', self.std_dev, i_episode)
         self.writer.add_scalar('global/avg_reward', self.avg_score, i_episode)

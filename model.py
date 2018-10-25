@@ -43,11 +43,9 @@ class LowDimActor(nn.Module):
 
     def forward(self, state):
         """Build an actor (policy) network that maps states -> actions."""
-        #print('state:  {}'.format(state.shape))
         x = F.relu(self.fc1(state))
         x = F.relu(self.fc2(x))
         x = torch.tanh(self.fc3(x))
-        #print('out:  {}'.format(x.shape))
         return x
 
 class LowDimCritic(nn.Module):
@@ -77,21 +75,10 @@ class LowDimCritic(nn.Module):
 
     def forward(self, state, action):
         """Build a critic (value) network that maps (state, action) pairs -> Q-values."""
-        #print('state pre:  {}'.format(state.shape))
-        #state = state.reshape((-1, 48))
-        #print('action pre:  {}'.format(action.shape))
-        #action = action.reshape((-1, 4))
-        #print('action pst:  {}'.format(action.shape))
-        #print('state pst:  {}'.format(state.shape))
         xs = torch.cat((state, action), dim=1)
         x = F.relu(self.fcs1(xs))
-
-        #print('x:  {}'.format(x.shape))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
-        #print('pre:  {}'.format(x.shape))
-        #x = x.reshape((-1, 2))
-        #print('out:  {}'.format(x.shape))
         return x
 
 # Initialize local and target network with identical initial weights.

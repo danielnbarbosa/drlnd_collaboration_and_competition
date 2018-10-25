@@ -9,8 +9,6 @@ class UnityMLVectorMultiAgent():
     """Multi-agent UnityML environment with vector observations."""
 
     def __init__(self, seed=0):
-        self.seed = seed
-        print('SEED: {}'.format(self.seed))
         # choose correct unity environment for platform
         os = platform.system()
         if os == 'Darwin':
