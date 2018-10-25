@@ -38,14 +38,14 @@ class MADDPG():
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)
 
         if load_file:
-            self.agents[0].actor_local.load_state_dict(torch.load(load_file + '.1.actor.pth'))
-            self.agents[0].actor_target.load_state_dict(torch.load(load_file + '.1.actor.pth'))
-            self.agents[0].critic_local.load_state_dict(torch.load(load_file + '.1.critic.pth'))
-            self.agents[0].critic_target.load_state_dict(torch.load(load_file + '.1.critic.pth'))
-            self.agents[1].actor_local.load_state_dict(torch.load(load_file + '.2.actor.pth'))
-            self.agents[1].actor_target.load_state_dict(torch.load(load_file + '.2.actor.pth'))
-            self.agents[1].critic_local.load_state_dict(torch.load(load_file + '.2.critic.pth'))
-            self.agents[1].critic_target.load_state_dict(torch.load(load_file + '.2.critic.pth'))
+            self.agents[0].actor_local.load_state_dict(torch.load(load_file + '.1.actor.pth', map_location='cpu'))
+            self.agents[0].actor_target.load_state_dict(torch.load(load_file + '.1.actor.pth', map_location='cpu'))
+            self.agents[0].critic_local.load_state_dict(torch.load(load_file + '.1.critic.pth', map_location='cpu'))
+            self.agents[0].critic_target.load_state_dict(torch.load(load_file + '.1.critic.pth', map_location='cpu'))
+            self.agents[1].actor_local.load_state_dict(torch.load(load_file + '.2.actor.pth', map_location='cpu'))
+            self.agents[1].actor_target.load_state_dict(torch.load(load_file + '.2.actor.pth', map_location='cpu'))
+            self.agents[1].critic_local.load_state_dict(torch.load(load_file + '.2.critic.pth', map_location='cpu'))
+            self.agents[1].critic_target.load_state_dict(torch.load(load_file + '.2.critic.pth', map_location='cpu'))
             print('Loaded: {}'.format(load_file))
 
     def step(self, all_states, all_actions, all_rewards, all_next_states, all_dones):
