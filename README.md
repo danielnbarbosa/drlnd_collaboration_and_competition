@@ -1,9 +1,9 @@
-![tennis](assets/tennis_environment.png)
+![tennis](assets/trained_agent.gif)
 
 ## Introduction
-This project is being done as part of the [Udacity Deep Reinforcement Learning Nanodegree](https://www.udacity.com/course/deep-reinforcement-learning-nanodegree--nd893), a four month course that I am enrolled in.
+This project uses Multi-Agent Deep Deterministic Policy Gradient (MADDPG) to train a pair of agents to play [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis).
 
-We will use deep reinforcement learning to train an agent inside a Unity-ML [Tennis](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#tennis) environment.
+This project is being done as part of the [Udacity Deep Reinforcement Learning Nanodegree](https://www.udacity.com/course/deep-reinforcement-learning-nanodegree--nd893), a four month course that I am taking.
 
 
 ## Environment Description
@@ -32,7 +32,7 @@ The environment is considered solved, when the average (over 100 episodes) of th
 ## Installation
 
 #### Step 1: Clone the repo
-Clone this repo using `git clone https://github.com/danielnbarbosa/drlnd_collaboration_and_competition.git`.  Pre-compiled Unity environments for MacOS and Linux are included in this repo.
+Clone this repo using `git clone https://github.com/danielnbarbosa/drlnd_collaboration_and_competition.git`.  Pre-compiled Unity environments for MacOS and Linux are included.
 
 
 #### Step 2: Install Dependencies
