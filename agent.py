@@ -9,6 +9,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+import model
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -16,7 +17,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class MADDPG():
     """Meta agent that contains the two DDPG agents and shared replay buffer."""
 
-    def __init__(self, models, action_size=2, seed=0, load_file=None,
+    def __init__(self, action_size=2, seed=0, load_file=None,
                  n_agents=2,
                  buffer_size=int(3e4),
                  batch_size=128,
@@ -28,11 +29,10 @@ class MADDPG():
         """
         Params
         ======
-            model: model object
             action_size (int): dimension of each action
             seed (int): Random seed
             load_file (str): path of checkpoint file to load
-            n_agents (int): number of agents to train simultaneously
+            n_agents (int): number of distinct agents
             buffer_size (int): replay buffer size
             batch_size (int): minibatch size
             gamma (float): discount factor
@@ -51,7 +51,8 @@ class MADDPG():
         self.noise_decay = noise_decay
         self.t_step = 0
         self.evaluation_only = evaluation_only
-        # create two agents
+        # create two agents, each with their own actor and critic
+        models = [model.LowDim2x(n_agents=n_agents) for _ in range(n_agents)]
         self.agents = [DDPG(0, models[0], load_file=None), DDPG(1, models[1], load_file=None)]
         # create shared replay buffer
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)

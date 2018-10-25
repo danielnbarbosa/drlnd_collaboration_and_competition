@@ -9,7 +9,7 @@ class UnityMLVectorMultiAgent():
     """Multi-agent UnityML environment with vector observations."""
 
     def __init__(self, seed=0):
-        # choose correct unity environment for platform
+        """Load platform specific file and initialize the environment."""
         os = platform.system()
         if os == 'Darwin':
             file_name = 'Tennis.app'

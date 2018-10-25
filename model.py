@@ -16,18 +16,22 @@ def hidden_init(layer):
     lim = 1. / np.sqrt(fan_in)
     return (-lim, lim)
 
+
 class LowDimActor(nn.Module):
-    """Actor (Policy) Model."""
+    """
+    Actor (Policy) Model.
+    Input dimension is size of state for a single agent.
+    """
 
     def __init__(self, state_size, action_size, seed, fc1_units=400, fc2_units=300):
         """Initialize parameters and build model.
         Params
         ======
-            state_size (int): Dimension of each state
-            action_size (int): Dimension of each action
-            seed (int): Random seed
-            fc1_units (int): Number of nodes in first hidden layer
-            fc2_units (int): Number of nodes in second hidden layer
+            state_size (int): dimension of each state
+            action_size (int): dimension of each action
+            seed (int): random seed
+            fc1_units (int): number of nodes in first hidden layer
+            fc2_units (int): number of nodes in second hidden layer
         """
         super(LowDimActor, self).__init__()
         self.seed = torch.manual_seed(seed)
@@ -51,21 +55,25 @@ class LowDimActor(nn.Module):
 
 
 class LowDimCritic(nn.Module):
-    """Critic (Value) Model."""
+    """
+    Critic (Value) Model.
+    Input dimension is size of states and actions across all agents.
+    """
 
     def __init__(self, n_agents, state_size, action_size, seed, fc1_units=400, fc2_units=300):
         """Initialize parameters and build model.
         Params
         ======
-            state_size (int): Dimension of each state
-            action_size (int): Dimension of each action
-            seed (int): Random seed
-            fc1_units (int): Number of nodes in the first hidden layer
-            fc2_units (int): Number of nodes in the second hidden layer
+            n_agents (int): number of distinct agents
+            state_size (int): dimension of each state
+            action_size (int): dimension of each action
+            seed (int): random seed
+            fc1_units (int): number of nodes in the first hidden layer
+            fc2_units (int): number of nodes in the second hidden layer
         """
         super(LowDimCritic, self).__init__()
         self.seed = torch.manual_seed(seed)
-        self.fc1 = nn.Linear(state_size+action_size*n_agents, fc1_units)
+        self.fc1 = nn.Linear((state_size+action_size)*n_agents, fc1_units)
         self.fc2 = nn.Linear(fc1_units, fc2_units)
         self.fc3 = nn.Linear(fc2_units, 1)
         self.reset_parameters()
@@ -89,15 +97,23 @@ class LowDimCritic(nn.Module):
 
 class LowDim2x():
     """
-    Container for actor, critic and respective target networks.
+    Container for actor and critic along with respective target networks.
     Initialize local and target network with identical initial weights.
     """
 
     def __init__(self, n_agents, state_size=24, action_size=2, seed=0):
+        """
+        Params
+        ======
+            n_agents (int): number of distinct agents
+            state_size (int): number of state dimensions for a single agent
+            action_size (int): number of action dimensions for a single agent
+            seed (int): random seed
+        """
         self.actor_local = LowDimActor(state_size, action_size, seed).to(device)
         self.actor_target = LowDimActor(state_size, action_size, seed).to(device)
-        self.critic_local = LowDimCritic(n_agents, state_size*n_agents, action_size, seed).to(device)
-        self.critic_target = LowDimCritic(n_agents, state_size*n_agents, action_size, seed).to(device)
+        self.critic_local = LowDimCritic(n_agents, state_size, action_size, seed).to(device)
+        self.critic_target = LowDimCritic(n_agents, state_size, action_size, seed).to(device)
         print(self.actor_local)
         summary(self.actor_local, (state_size,))
         print(self.critic_local)
