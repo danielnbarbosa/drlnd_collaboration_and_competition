@@ -1,5 +1,5 @@
 ## Trained Agent
-Here's what the agent looks like after training.  It's a little choppy due to the way Unity renders it.
+Here's what the agent looks like after training.
 
 ![trained_agent](assets/trained_agent.gif)
 
@@ -37,3 +37,6 @@ This graph shows the average reward over the last 100 consecutive episodes (afte
 
 
 ## Ideas for Future Work
+  - It would be interesting to apply this algorithm to a more complex environment, like the 2 on 2 [SoccerTwos](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#soccer-twos) as this would involve agents working in both a collaborative and competitive manner simultaneously.  Given that each agent is able to learn it's own reward function, this should be feasible.
+
+  
