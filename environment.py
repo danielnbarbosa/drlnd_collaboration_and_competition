@@ -12,10 +12,10 @@ class UnityMLVectorMultiAgent():
         # choose correct unity environment for platform
         os = platform.system()
         if os == 'Darwin':
-            file_name='unity_envs/Tennis.app'
+            file_name = 'Tennis.app'
         elif os == 'Linux':
-            file_name='unity_envs/Tennis_Linux/Tennis.x86_64'
-        self.env = UnityEnvironment(file_name=file_name, seed=seed)
+            file_name = 'Tennis_Linux/Tennis.x86_64'
+        self.env = UnityEnvironment(file_name='unity_envs/' + file_name, seed=seed)
         self.brain_name = self.env.brain_names[0]
 
     def reset(self):

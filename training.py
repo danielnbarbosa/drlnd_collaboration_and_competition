@@ -63,19 +63,18 @@ def train(environment, agent, n_episodes=10000, max_t=1000,
         # every epoch (100 episodes)
         if i_episode % 100 == 0:
             stats.print_epoch(i_episode, stats_format, buffer_len, agent.noise_weight)
-            save_name = 'checkpoints/episode.{}'.format(i_episode)
-            torch.save(agent.agents[0].actor_local.state_dict(), save_name + '.1.actor.pth')
-            torch.save(agent.agents[0].critic_local.state_dict(), save_name + '.1.critic.pth')
-            torch.save(agent.agents[1].actor_local.state_dict(), save_name + '.2.actor.pth')
-            torch.save(agent.agents[1].critic_local.state_dict(), save_name + '.2.critic.pth')
+            save_name = 'checkpoints/episode.{}.'.format(i_episode)
+            for i, save_agent in enumerate(agent.agents):
+                torch.save(save_agent.actor_local.state_dict(), save_name + str(i) + '.actor.pth')
+                torch.save(save_agent.critic_local.state_dict(), save_name + str(i) + '.critic.pth')
 
         # if solved
         if stats.is_solved(i_episode, solve_score):
             stats.print_solve(i_episode, stats_format, buffer_len, agent.noise_weight)
-            torch.save(agent.agents[0].actor_local.state_dict(), 'checkpoints/solved.1.actor.pth')
-            torch.save(agent.agents[0].critic_local.state_dict(), 'checkpoints/solved.1.critic.pth')
-            torch.save(agent.agents[1].actor_local.state_dict(), 'checkpoints/solved.2.actor.pth')
-            torch.save(agent.agents[1].critic_local.state_dict(), 'checkpoints/solved.2.critic.pth')
+            save_name = 'checkpoints/solved.'
+            for i, save_agent in enumerate(agent.agents):
+                torch.save(save_agent.actor_local.state_dict(), save_name + str(i) + '.actor.pth')
+                torch.save(save_agent.critic_local.state_dict(), save_name + str(i) + '.critic.pth')
             break
 
     # training finished

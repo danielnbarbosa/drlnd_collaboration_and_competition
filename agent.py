@@ -1,5 +1,5 @@
 """
-DDPG agent.
+MADDPG agent.
 """
 
 import random
@@ -14,7 +14,7 @@ import torch.optim as optim
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class MADDPG():
-    """Meta agent."""
+    """Meta agent that contains the two DDPG agents and shared replay buffer."""
 
     def __init__(self, models, action_size=2, seed=0, load_file=None,
                  n_agents=2,
@@ -51,18 +51,20 @@ class MADDPG():
         self.noise_decay = noise_decay
         self.t_step = 0
         self.evaluation_only = evaluation_only
+        # create two agents
         self.agents = [DDPG(0, models[0], load_file=None), DDPG(1, models[1], load_file=None)]
+        # create shared replay buffer
         self.memory = ReplayBuffer(action_size, self.buffer_size, self.batch_size, seed)
         if load_file:
-            self.agents[0].actor_local.load_state_dict(torch.load(load_file + '.1.actor.pth', map_location='cpu'))
-            self.agents[0].actor_target.load_state_dict(torch.load(load_file + '.1.actor.pth', map_location='cpu'))
-            self.agents[0].critic_local.load_state_dict(torch.load(load_file + '.1.critic.pth', map_location='cpu'))
-            self.agents[0].critic_target.load_state_dict(torch.load(load_file + '.1.critic.pth', map_location='cpu'))
-            self.agents[1].actor_local.load_state_dict(torch.load(load_file + '.2.actor.pth', map_location='cpu'))
-            self.agents[1].actor_target.load_state_dict(torch.load(load_file + '.2.actor.pth', map_location='cpu'))
-            self.agents[1].critic_local.load_state_dict(torch.load(load_file + '.2.critic.pth', map_location='cpu'))
-            self.agents[1].critic_target.load_state_dict(torch.load(load_file + '.2.critic.pth', map_location='cpu'))
-            print('Loaded: {}'.format(load_file))
+            for i, save_agent in enumerate(self.agents):
+                actor_file = torch.load(load_file + '.' + str(i) + '.actor.pth', map_location='cpu')
+                critic_file = torch.load(load_file + '.' + str(i) + '.critic.pth', map_location='cpu')
+                save_agent.actor_local.load_state_dict(actor_file)
+                save_agent.actor_target.load_state_dict(actor_file)
+                save_agent.critic_local.load_state_dict(critic_file)
+                save_agent.critic_target.load_state_dict(critic_file)
+            print('Loaded: {}.actor.pth'.format(load_file))
+            print('Loaded: {}.critic.pth'.format(load_file))
 
     def step(self, all_states, all_actions, all_rewards, all_next_states, all_dones):
         all_states = all_states.reshape(1, -1)  # reshape 2x24 into 1x48 dim vector
@@ -78,6 +80,7 @@ class MADDPG():
                 self.learn(experiences, self.gamma)
 
     def act(self, all_states, add_noise=True):
+        # pass each agent's state from the environment and calculate it's action
         all_actions = []
         for agent, state in zip(self.agents, all_states):
             action = agent.act(state, noise_weight=self.noise_weight, add_noise=True)
@@ -108,7 +111,7 @@ class MADDPG():
 
 
 class DDPG():
-    """Interacts with and learns from the environment."""
+    """DDPG agent with own actor and critic."""
 
     def __init__(self, id, model, action_size=2, seed=0, load_file=None,
                  tau=1e-3,
@@ -168,15 +171,13 @@ class DDPG():
 
     def learn(self, agent_id, experiences, gamma, all_next_actions, all_actions):
         """Update policy and value parameters using given batch of experience tuples.
-        Q_targets = r + γ * critic_target(next_state, actor_target(next_state))
-        where:
-            actor_target(state) -> action
-            critic_target(state, action) -> Q-value
 
         Params
         ======
             experiences (Tuple[torch.Tensor]): tuple of (s, a, r, s', done) tuples
             gamma (float): discount factor
+            all_next_actions (list): each agent's next_action (as calculated by it's actor)
+            all_actions (list): each agent's action (as calculated by it's actor)
         """
 
         states, actions, rewards, next_states, dones = experiences
@@ -190,10 +191,11 @@ class DDPG():
             q_targets_next = self.critic_target(next_states, actions_next)
         # compute Q targets for current states (y_i)
         q_expected = self.critic_local(states, actions)
-        # compute critic loss
+        # q_targets = reward of this timestep + discount * Q(st+1,at+1) from target network
         q_targets = rewards.index_select(1, agent_id) + (gamma * q_targets_next * (1 - dones.index_select(1, agent_id)))
+        # compute critic loss
         critic_loss = F.mse_loss(q_expected, q_targets.detach())
-        self.critic_loss = critic_loss.item()
+        self.critic_loss = critic_loss.item()  # for tensorboard logging
         # minimize loss
         critic_loss.backward()
         self.critic_optimizer.step()
@@ -201,11 +203,11 @@ class DDPG():
         # ---------------------------- update actor ---------------------------- #
         # compute actor loss
         self.actor_optimizer.zero_grad()
-        # detach actions that are not from this agent
+        # detach actions from other agents
         actions_pred = [actions if i == self.id else actions.detach() for i, actions in enumerate(all_actions)]
         actions_pred = torch.cat(actions_pred, dim=1).to(device)
         actor_loss = -self.critic_local(states, actions_pred).mean()
-        self.actor_loss = actor_loss.item()
+        self.actor_loss = actor_loss.item()  # calculate policy gradient
         # minimize loss
         actor_loss.backward()
         self.actor_optimizer.step()
