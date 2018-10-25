@@ -111,4 +111,4 @@ class LowDim2x():
         print(self.actor_local)
         summary(self.actor_local, (state_size,))
         print(self.critic_local)
-        summary(self.critic_local, (state_size*n_agents,), (action_size*n_agents,))
+        #summary(self.critic_local, (state_size*n_agents,), (action_size*n_agents,))

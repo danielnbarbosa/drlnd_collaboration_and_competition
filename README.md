@@ -42,7 +42,6 @@ Create an [anaconda](https://www.anaconda.com/download/) environment that contai
 ```
 conda create --name drlnd_collaboration_and_competition python=3.6
 source activate drlnd_collaboration_and_competition
-conda install -y python.app
 conda install -y pytorch -c pytorch
 pip install torchsummary tensorboardX unityagents
 ```
@@ -51,11 +50,9 @@ pip install torchsummary tensorboardX unityagents
 See separate [instructions](assets/linux_setup.md).
 
 ## Train your agent
-To train the agent run `./main.py`.  This will fire up the Unity environment and output live training statistics to the command line as well as logging stats to the 'runs' directory for visualizing via tensorboard.
+To train the agent run `./main.py`.  This will fire up the Unity environment and output live training statistics to the command line as well as logging stats to the 'runs' directory for visualizing via tensorboard.  To start tensorboard run `tensorboard --logdir runs`.
 
-To load a saved model in evaluation mode run `./main.py --eval --load=<path to files>`.  This will load the saved weights from checkpoint files.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo, to load this model run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
-
-Mac users may need to execute `pythonw main.py` instead of just `./main.py`.  This is due to matplotlib requiring a framework build of python on MacOS which is installed as pythonw.  More details [here](https://matplotlib.org/faq/osx_framework.html).
+To load a saved model in evaluation mode run `./main.py --eval --load=<path to files>`.  This will load saved weights from checkpoint files.  Evaluation mode disables training and noise, which gives better performance.  A previously trained model is included in this repo, to load this model run `./main.py --eval --load=checkpoints/saved/solved`.  Note that the underlying files are named 'solved.0.actor.pth', 'solved.0.critic.pth', etc. but you need only pass the common part of the file name, e.g. 'solved'.
 
 
 ## Results

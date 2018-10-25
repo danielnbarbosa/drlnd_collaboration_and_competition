@@ -6,9 +6,7 @@ Statistics to track agent performance.
 import time
 from collections import deque
 import numpy as np
-import matplotlib.pyplot as plt
 from tensorboardX import SummaryWriter
-from visualize import sub_plot
 
 
 class Stats():
@@ -73,11 +71,3 @@ class Stats():
     def print_solve(self, i_episode, stats_format, *args):
         self.print_epoch(i_episode, stats_format, *args)
         print('\nSolved in {:d} episodes!'.format(i_episode-100))
-
-    def plot(self):
-        """Plot stats in nice graphs."""
-        plt.figure(1)
-        # plot score
-        sub_plot(121, self.scores, y_label='Score')
-        sub_plot(122, self.avg_scores, y_label='Avg Score', x_label='Episodes')
-        plt.show()

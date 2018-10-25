@@ -7,9 +7,7 @@ import torch
 import statistics
 
 
-def train(environment, agent, n_episodes=10000, max_t=1000,
-          solve_score=0.5,
-          graph_when_done=False):
+def train(environment, agent, n_episodes=10000, max_t=1000, solve_score=0.5):
     """ Run training loop.
 
     Params
@@ -19,7 +17,6 @@ def train(environment, agent, n_episodes=10000, max_t=1000,
         n_episodes (int): maximum number of training episodes
         max_t (int): maximum number of timesteps per episode
         solve_score (float): criteria for considering the environment solved
-        graph_when_done (bool): whether to show matplotlib graphs of the training run
     """
 
 
@@ -76,7 +73,3 @@ def train(environment, agent, n_episodes=10000, max_t=1000,
                 torch.save(save_agent.actor_local.state_dict(), save_name + str(i) + '.actor.pth')
                 torch.save(save_agent.critic_local.state_dict(), save_name + str(i) + '.critic.pth')
             break
-
-    # training finished
-    if graph_when_done:
-        stats.plot()
